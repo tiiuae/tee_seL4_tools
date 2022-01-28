@@ -91,6 +91,12 @@ config_option(
     DEPENDS KernelArchArmV8a
 )
 
+config_string(
+    ElfloaderLoadOffset ELFLOADER_LOAD_OFFSET
+    "Add offset to elfloader load address"
+    DEFAULT 0x0
+)
+
 add_config_library(elfloader "${configure_string}")
 
 add_compile_options(-D_XOPEN_SOURCE=700 -ffreestanding -Wall -Werror -W -Wextra)
@@ -420,3 +426,12 @@ target_link_libraries(
         elfloader_Config
         sel4_autoconf
 )
+
+# Apply offset to elfloader load address
+message(STATUS "ElfloaderLoadOffset: ${ElfloaderLoadOffset}")
+add_custom_command(
+    TARGET elfloader POST_BUILD
+    COMMAND
+        ${CROSS_COMPILER_PREFIX}objcopy --change-addresses ${ElfloaderLoadOffset} elfloader elfloader
+    VERBATIM
+) 
